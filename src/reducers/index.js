@@ -1,9 +1,39 @@
+import {
+    ADD_SMURF,
+    FETCH_SMURF,
+    SET_ERROR,
+    FETCH_SMURF_SUCCESS,
+} from '../types';
 
 export const initialState = {
+    smurfs: [],
+    isLoading: false,
+    error: null,
 }
 
-const reducer = ()=>{
+const reducer = (state = initialState, action) => {
+    switch(action.type) {
+        case FETCH_SMURF:
+            return {...state, isLoading: true}
+        case FETCH_SMURF_SUCCESS:
+            return{
+                ...state,
+                smurfs: [...action.payload],
+                isLoading: false,
+            }
+        case ADD_SMURF:
+            return {
+                ...state,
+                smurfs: [...state.smurfs, ...action.payload],
+            }
+        case SET_ERROR:
+            return {...state, error: action.payload}
+        default:
+            return state
+    }
 }
+
+export default reducer;
 
 export default reducer;
 

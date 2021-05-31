@@ -1,57 +1,126 @@
-import React, { useState } from 'react';
+import React from 'react'
+import { connect } from 'react-redux'
+import apis from '../apis'
+import { ADD_SMURF, SET_ERROR } from '../types'
 
-const AddForm = (props) => {
-    const [state, setState] = useState({
-        name:"",
-        position:"",
-        nickname:"",
-        description:""
-    });
-
-    const handleChange = e => {
-        setState({
-            ...state,
-            [e.target.name]:e.target.value
-        });
+class AddForm extends React.Component {
+    state = {
+        id: new Date(),
+        name: '',
+        position: '',
+        nickname: '',
+        description: '',
     }
 
-    const handleSubmit = e => {
-        e.preventDefault();
-        if (state.name === "" || state.position === "" || state.nickname === "") {
-            errorMessage = "Name, position and nickname fields are required.";
+    handleChange = (e) => {
+        e.preventDefault()
+        this.setState({
+            [e.target.name]: e.target.value,
+        })
+    }
+    addSmurf = () => {
+        apis.post('/smurfs', this.state)
+            .then((res) => {
+                this.props.dispatch({
+                    type: ADD_SMURF,
+                    payload: res.data,
+                })
+            })
+            .catch((err) =>
+                this.props.dispatch({ type: SET_ERROR, payload: err.message })
+            )
+        this.setState({})
+    }
+    handleSubmit = (e) => {
+        e.preventDefault()
+        try {
+            if (!this.state.name) {
+                throw new Error('Please enter a name')
+            }
+            if (!this.state.nickname) {
+                throw new Error('Please enter a nickname')
+            }
+            if (!this.state.position) {
+                throw new Error('Please enter a position')
+            }
+            this.addSmurf()
+        } catch (error) {
+            this.props.dispatch({ type: SET_ERROR, payload: error.message })
         }
     }
 
-    const errorMessage = "";
-
-    return(<section>
-        <h2>Add Smurf</h2>
-        <form onSubmit={handleSubmit}>
-            <div className="form-group">
-                <label htmlFor="name">Name:</label><br/>
-                <input onChange={handleChange} value={state.name} name="name" id="name" />
-            </div>
-            <div className="form-group">
-                <label htmlFor="position">Position:</label><br/>
-                <input onChange={handleChange} value={state.position} name="position" id="position" />
-            </div>
-            <div className="form-group">
-                <label htmlFor="nickname">Nickname:</label><br/>
-                <input onChange={handleChange} value={state.nickname} name="nickname" id="nickname" />
-            </div>
-            <div className="form-group">
-                <label htmlFor="description">Description:</label><br/>
-                <textarea onChange={handleChange} value={state.description} name="description" id="description" />
-            </div>
-            {
-                errorMessage && <div data-testid="errorAlert" className="alert alert-danger" role="alert">Error: {errorMessage}</div>
-            }
-            <button>Submit Smurf</button>
-        </form>
-    </section>);
+    render() {
+        console.log(this.state)
+        return (
+            <section>
+                <h2>Add Smurf</h2>
+                <form onSubmit={this.handleSubmit}>
+                    <div className="form-group">
+                        <label htmlFor="name">Name:</label>
+                        <br />
+                        <input
+                            onChange={this.handleChange}
+                            name="name"
+                            id="name"
+                            value={this.state.name}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="name">Position:</label>
+                        <br />
+                        <input
+                            onChange={this.handleChange}
+                            name="position"
+                            id="name"
+                            value={this.state.position}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="name">Nickname:</label>
+                        <br />
+                        <input
+                            onChange={this.handleChange}
+                            name="nickname"
+                            id="name"
+                            value={this.state.nickname}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="name">Description:</label>
+                        <br />
+                        <input
+                            onChange={this.handleChange}
+                            name="description"
+                            id="name"
+                            value={this.state.description}
+                        />
+                    </div>
+                    <div
+                        data-testid="errorAlert"
+                        className="alert alert-danger"
+                        role="alert"
+                    >
+                        Error:
+                        {this.props.error === null
+                            ? ' No Errors'
+                            : this.props.error}
+                    </div>
+                    <button>Submit Smurf</button>
+                </form>
+            </section>
+        )
+    }
 }
 
-export default AddForm;
+const mapStateToProps = (state) => {
+    return {
+        smurfs: state.smurfs,
+        isLoading: state.isLoading,
+        error: state.error,
+    }
+}
+
+export default connect(mapStateToProps, (dispatch) => ({ dispatch }))(AddForm)
 
 //Task List:
 //1. Connect the errorMessage, setError and addSmurf actions to the AddForm component.
